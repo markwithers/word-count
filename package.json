@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Different programming styles for implementing the same word count program.",
   "dependencies": {
-    "mori": "^0.3.2"
+    "mori": "^0.3.2",
+    "ramda": "^0.18.0"
   },
   "devDependencies": {},
   "scripts": {
