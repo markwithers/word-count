@@ -1,33 +1,39 @@
 import Data.List
+import Data.Char
 
-header :: [[Char]]
+type Rank = Int
+type WordCount = (String, Int)
+type RankedWordCount = (Rank, WordCount)
+
+toLowerCase :: String -> String
+toLowerCase = map toLower
+
+header :: [String]
 header = ["The top 10 most frequently used:", "--------------------------------"]
 
-addHeader :: [a] -> [a] -> [a]
-addHeader header body = header ++ body
+addHeader :: [String] -> [String]
+addHeader body = header ++ body
 
-showDetails :: Show a => (a, ([Char], a)) -> [Char]
-showDetails (idx, (word, count)) = (show idx) ++ ". " ++ word ++ ": " ++ (show count)
+showDetails :: RankedWordCount -> String
+showDetails (rank, (word, count)) = show rank ++ ". " ++ word ++ ": " ++ show count
 
-makeTally :: [a] -> (a, Int)
-makeTally xs = (head xs, length xs)
+getWordCount :: [String] -> WordCount
+getWordCount xs = (head xs, length xs)
 
-tallyWords :: (Ord a, Eq a) => [a] -> [(a, Int)]
-tallyWords = map makeTally . group . sort
+tally :: [String] -> [WordCount]
+tally = map getWordCount . group . sort
 
-sortTallyDesc :: Ord a => (b, a) -> (b, a) -> Ordering
-sortTallyDesc a b = compare (snd b) (snd a)
+countDesc :: WordCount -> WordCount -> Ordering
+countDesc (_, count1) (_, count2) = compare count2 count1
 
-addRanking :: [a] -> [(Int, a)]
-addRanking = zip [1..]
+rankWords :: [WordCount] -> [RankedWordCount]
+rankWords = zip [1..]
 
-render :: [(Int, ([Char], Int))] -> IO ()
-render = putStrLn . unlines . (addHeader header) . map showDetails
+render :: [RankedWordCount] -> IO ()
+render = putStrLn . unlines . addHeader . map showDetails
 
-getTop10 :: String -> [(Int, (String, Int))]
-getTop10 = addRanking . (take 10) . (sortBy sortTallyDesc) . tallyWords . words
+program :: String -> [RankedWordCount]
+program = rankWords . take 10 . sortBy countDesc . tally . map toLowerCase . words
 
 main :: IO ()
-main = do
-  content <- readFile "words.txt"
-  render $ getTop10 content
+main = readFile "words.txt" >>= render . program
